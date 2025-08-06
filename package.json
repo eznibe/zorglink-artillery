@@ -1,0 +1,19 @@
+{
+  "name": "zorglink-artillery",
+  "version": "1.0.0",
+  "description": "Artillery load testing for Zorglink",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "artillery",
+    "load-testing"
+  ],
+  "author": "",
+  "license": "ISC"
+}

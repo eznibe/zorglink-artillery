@@ -1,0 +1,45 @@
+config:
+  target: 'https://lemonade.leersteun.lars-tst.school'
+  phases:
+    - duration: 1
+      arrivalRate: 2
+      name: "Trajectory create commands"
+  # Load CSV data
+  payload:
+    path: './data/tst-trajectories.csv'
+    fields:
+      - 'trajectory_id'
+      - 'question_id'
+      - 'name' 
+      - 'assignee_id'
+    skipHeader: true
+    delimiter: ','
+  variables:
+    access_token: "{{ $env.ACCESS_TOKEN }}"
+    mongo_claims: "{{ $env.MONGO_CLAIMS }}"
+  processor: '../../utils/response-logger.js'
+
+scenarios:
+  - name: "Create Support Question from CSV"
+    weight: 100
+    flow:
+      - post:
+          url: '/api/zorglink/zorglink-trajectory/{{ trajectory_id }}'
+          headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+          json:
+            _id: '{{ trajectory_id }}'
+            _corr: '{{ custom_uuid }}'
+            _command: "put"
+            _type: "zorglink-trajectory"
+            assigneeId: '{{ assignee_id }}'
+            name: '{{ name }} - {{ question_id }}'          
+            supportQuestionId: '{{ question_id }}'
+          beforeRequest: 'generateUuid'  
+          afterResponse: 'logResponse'
+          expect:
+            - statusCode: 
+                - 200
+                - 201
+            - contentType: json

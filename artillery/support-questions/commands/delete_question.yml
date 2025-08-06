@@ -2,8 +2,8 @@ config:
   target: 'https://lemonade.leersteun.lars-tst.school'
   phases:
     - duration: 1
-      arrivalRate: 1
-      name: "Support question create commands"
+      arrivalRate: 2
+      name: "Support question delete commands"
   # Load CSV data
   payload:
     path: './data/tst-questions.csv'
@@ -35,20 +35,10 @@ scenarios:
           json:
             _id: '{{ question_id }}'
             _corr: '{{ custom_uuid }}'
-            _command: "put"
+            _command: "delete"
             _type: "zorglink-support-question"
-            questionText: 'LOAD_TEST'
-            schoolText: 'LOAD_TEST'
-            schoolYear: '{{ school_year }}'
-            creationDate: '{{ creation_date }}'
-            studentSubscriptionId: '{{ student_subscription_id }}'
-            verslagId: '{{ verslag_id }}'
-            schoolEntityId: '{{ school_entity_id }}'
-            learningSupportCenterId: '{{ learning_support_center_id }}'
-            creatorId: '{{ creator_id }}'
-          # beforeRequest: 'logRequest'  
           beforeRequest: 'generateUuid' 
-          afterResponse: 'logResponse'
+          # afterResponse: 'logResponse'
           expect:
             - statusCode: 
                 - 200
