@@ -1,0 +1,20 @@
+config:
+  target: 'http://asciiart.artillery.io:8080'
+  phases:
+    - duration: 1
+      arrivalRate: 1
+      name: "Simple load test - 10 requests"
+  variables:
+    access_token: "{{ $processEnvironment.ACCESS_TOKEN || 'your-access-token-here' }}"
+    mongo_claims: "{{ $processEnvironment.MONGO_CLAIMS || 'your-mongo-claims-here' }}"
+
+scenarios:
+  - name: "Support Question View Query"
+    weight: 100
+    flow:
+      - loop:
+        - get:
+            url: '/dino'
+            expect:
+              - statusCode: 200
+        count: 1
