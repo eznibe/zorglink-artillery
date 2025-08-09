@@ -26,7 +26,7 @@ module.exports = {
     console.log('=== RESPONSE ===');
     console.log('Status:', response.statusCode);
     // console.log('Headers:', JSON.stringify(response.headers, null, 2));
-    // console.log('Body:', JSON.stringify(response.body, null, 2));
+    console.log('Body:', JSON.stringify(response.body, null, 2));
     if (requestParams.json) {
       console.log('JSON Payload:', JSON.stringify(requestParams.json, null, 2));
     }

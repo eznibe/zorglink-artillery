@@ -4,10 +4,10 @@ config:
   phases:
     - duration: 1
       arrivalRate: 1
-      name: "Simple load test"
+      name: "Care reception load"
   plugins:
     apdex:
-      threshold: 500    
+      threshold: 500
   variables:
     access_token: "{{ $env.ACCESS_TOKEN }}"
     mongo_claims: "{{ $env.MONGO_CLAIMS }}"
@@ -25,7 +25,9 @@ scenarios:
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
             json:
               - $match:
-                  learningSupportCenterId: "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -43,11 +45,11 @@ scenarios:
                           - " - "
                           - "$schoolEntityName"
                       else: ""
-              # - $match:
-              #     supportQuestion.status: "OPEN"
-              #       # $in:
-              #       #   - "OPEN"
-              #       #   - "INCOMPLETE"
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
               - $sort:
                   creationDate: -1
               - $facet:
@@ -56,21 +58,374 @@ scenarios:
                     - $limit: 50
                   pagination:
                     - $count: "count"
+            beforeRequest: "logRequest"        
             # afterResponse: "logResponse"
-            afterResponse: "logErrorResponse"
+            # afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200
-        # Teams list
+        # Filter group by weight
         - post:
-            url: "/api/zorglink/zorglink-team"
+            url: "/api/zorglink/zorglink-support-question-view"
             headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
             json:
               - $match:
-                  learningSupportCenterId: "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$verslag.type"
+                  key:
+                    $max: "$verslag.type"
+                  count:
+                    $sum: 1
               - $sort:
-                  name: 1
+                  creationDate: -1
+            # beforeRequest: "logRequest"      
+            # afterResponse: "logResponse"
             afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$team.name"
+                  key:
+                    $max: "$team.name"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            # afterResponse: "logResponse"
+            afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $set:
+                  schoolEntityDetails:
+                    $concat:
+                      - "$schoolEntity.schoolEntity.displayName"
+                      - "$schoolEntityName"        
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$schoolEntityDetails"
+                  key:
+                    $max: "$schoolEntityDetails"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            # afterResponse: "logResponse"
+            afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$verslag.typeReport"
+                  key:
+                    $max: "$verslag.typeReport"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            # afterResponse: "logResponse"
+            afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$supportQuestion.status"
+                  key:
+                    $max: "$supportQuestion.status"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            # afterResponse: "logResponse"
+            afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$supportQuestion.workflow"
+                  key:
+                    $max: "$supportQuestion.workflow"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            # afterResponse: "logResponse"
+            afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$verslag.educationForm"
+                  key:
+                    $max: "$verslag.educationForm"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            afterResponse: "logResponse"
+            # afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200
+        # Filter group by 
+        - post:
+            url: "/api/zorglink/zorglink-support-question-view"
+            headers:
+              Content-Type: "application/json"
+              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            json:
+              - $match:
+                  learningSupportCenterId: 
+                    $in:
+                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set:
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  status:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+              - $group:
+                  _id: "$trajectory.assignee.displayName"
+                  key:
+                    $max: "$trajectory.assignee.displayName"
+                  count:
+                    $sum: 1
+              - $sort:
+                  creationDate: -1
+            afterResponse: "logResponse"
+            # afterResponse: "logErrorResponse"
+            expect:
+              - statusCode: 200                                          

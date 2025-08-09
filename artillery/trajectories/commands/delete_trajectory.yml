@@ -2,13 +2,13 @@ config:
   target: 'https://lemonade.leersteun.lars-tst.school'
   phases:
     - duration: 1
-      arrivalRate: 2
+      arrivalRate: 10
       name: "Trajectory delete commands"
   # Load CSV data
   payload:
-    path: './data/tst-trajectories.csv'
+    path: '../../data/tst-questions-mongo.csv'
     fields:
-      - 'trajectory_id'
+      - 'question_id'
     skipHeader: true
     delimiter: ','
   variables:
@@ -21,12 +21,12 @@ scenarios:
     weight: 100
     flow:
       - post:
-          url: '/api/zorglink/zorglink-trajectory/{{ trajectory_id }}'
+          url: '/api/zorglink/zorglink-trajectory/{{ question_id }}'
           headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
           json:
-            _id: '{{ trajectory_id }}'
+            _id: '{{ question_id }}'
             _corr: '{{ custom_uuid }}'
             _command: "delete"
             _type: "zorglink-trajectory"

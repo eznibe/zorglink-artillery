@@ -1,12 +1,12 @@
 config:
-  target: 'https://lemonade.leersteun.lars-tst.school'
+  target: 'https://lemonade.leersteun.lars-acc.school'
   phases:
     - duration: 1
       arrivalRate: 1
       name: "Support question create commands"
   # Load CSV data
   payload:
-    path: './data/tst-questions.csv'
+    path: '../../data/acc-questions-mongo.csv'
     fields:
       - 'question_id'
       - 'school_year' 

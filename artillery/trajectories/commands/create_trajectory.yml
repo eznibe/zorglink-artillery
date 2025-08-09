@@ -2,14 +2,46 @@ config:
   target: 'https://lemonade.leersteun.lars-tst.school'
   phases:
     - duration: 1
-      arrivalRate: 2
+      arrivalRate: 1  
       name: "Trajectory create commands"
+  environments:
+    tst:
+      target: 'https://lemonade.leersteun.lars-tst.school'
+      phases:
+        - duration: 1
+          arrivalRate: 1
+    acc:
+      target: 'https://lemonade.leersteun.lars-acc.school'
+      phases:
+        - duration: 1
+          arrivalRate: 1
+      payload:
+        path: '../../data/acc-questions-mongo.csv'
+        fields:
+          - 'question_id'
+          - 'school_year' 
+          - 'creation_date'
+          - 'student_subscription_id'
+          - 'verslag_id'
+          - 'school_entity_id'
+          - 'learning_support_center_id'
+          - 'creator_id'
+          - 'name' 
+          - 'assignee_id'
+        skipHeader: true
+        delimiter: ','    
   # Load CSV data
   payload:
-    path: './data/tst-trajectories.csv'
+    path: '../../data/tst-questions-mongo.csv'
     fields:
-      - 'trajectory_id'
       - 'question_id'
+      - 'school_year' 
+      - 'creation_date'
+      - 'student_subscription_id'
+      - 'verslag_id'
+      - 'school_entity_id'
+      - 'learning_support_center_id'
+      - 'creator_id'
       - 'name' 
       - 'assignee_id'
     skipHeader: true
@@ -23,13 +55,14 @@ scenarios:
   - name: "Create Support Question from CSV"
     weight: 100
     flow:
+      - log: 'Current environment is set to: {{ $environment }}'
       - post:
-          url: '/api/zorglink/zorglink-trajectory/{{ trajectory_id }}'
+          url: '/api/zorglink/zorglink-trajectory/{{ question_id }}'
           headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
           json:
-            _id: '{{ trajectory_id }}'
+            _id: '{{ question_id }}'
             _corr: '{{ custom_uuid }}'
             _command: "put"
             _type: "zorglink-trajectory"
