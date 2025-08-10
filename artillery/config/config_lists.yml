@@ -46,7 +46,7 @@ config:
         #   arrivalRate: 10
         #   rampTo: 50  
       payload:
-        path: '../../data/prd-learning-support-centers.csv'
+        path: '../../data/github-prd-learning-support-centers.csv'
         fields:
           - 'learning_support_center_id'
           - 'name'
