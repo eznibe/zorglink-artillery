@@ -39,8 +39,8 @@ config:
     prd:
       target: 'https://leersteun.lars.school'
       phases:
-        - duration: '1s'
-          arrivalRate: 4
+        - duration: '1m'
+          arrivalRate: 5
           maxVusers: 5000
         # - duration: '5m'
         #   arrivalRate: 10

@@ -40,4 +40,4 @@ jobs:
 
       - name: Run Artillery tests in parallel
         run: |
-          artillery run -e prd artillery/${{matrix.scenario_name}}.yml --config artillery/config/config_lists.yml
+          artillery run -e prd artillery/${{matrix.scenario_name}}.yml --config artillery/config/config_lists.yml --tags "env:prd,from:github" --record --key a9_eteys7jtoltgrxxmggk1ktiez2liwkb9
