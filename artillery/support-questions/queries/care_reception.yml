@@ -5,17 +5,67 @@ config:
     - duration: 1
       arrivalRate: 1
       name: "Care reception load"
-  plugins:
-    apdex:
-      threshold: 500
+  environments:
+    tst:
+      target: 'https://lemonade.leersteun.lars-tst.school'
+      phases:
+        - duration: 1
+          arrivalRate: 1
+      variables:
+        learning_support_center_id_: "4126aba9-622d-4ada-98c3-2eb319793ec6"    
+      payload:
+        path: '../../data/acc-learning-support-centers.csv'
+        fields:
+          - 'learning_support_center_id'
+          - 'name'
+          - 'access_token' 
+          - 'mongo_claims'
+        skipHeader: true
+        delimiter: ','  
+    acc:
+      target: 'https://lemonade.leersteun.lars-acc.school'
+      phases:
+        - duration: 1
+          arrivalRate: 1
+      payload:
+        path: '../../data/acc-learning-support-centers.csv'
+        fields:
+          - 'learning_support_center_id'
+          - 'name'
+          - 'access_token' 
+          - 'mongo_claims'
+        skipHeader: true
+        delimiter: ','
+    prd:
+      target: 'https://leersteun.lars.school'
+      phases:
+        - duration: '10m'
+          arrivalRate: 30
+          maxVusers: 5000
+        # - duration: '5m'
+        #   arrivalRate: 10
+        #   rampTo: 50  
+      payload:
+        path: '../../data/prd-learning-support-centers.csv'
+        fields:
+          - 'learning_support_center_id'
+          - 'name'
+          - 'access_token' 
+          - 'mongo_claims'
+        skipHeader: true
+        delimiter: ','
+  # plugins:
+  #   apdex:
+  #     threshold: 1500
   variables:
-    access_token: "{{ $env.ACCESS_TOKEN }}"
-    mongo_claims: "{{ $env.MONGO_CLAIMS }}"
+    access_token_: "{{ $env.ACCESS_TOKEN }}"
+    mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
 
 scenarios:
   - name: "Support Question View Query"
     weight: 100
     flow:
+      # - log: 'Current environment is set to: {{ $environment }} and LSC is: {{ name }} {{ learning_support_center_id }}'
       - parallel:
         # Support Questions list
         - post:
@@ -27,13 +77,14 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
                       - "$schoolEntity.name"
                       - ""
-              - $set:
+              - $set: 
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $cond:
                       if:
@@ -46,10 +97,11 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
+                      - "ARCHIVED"
               - $sort:
                   creationDate: -1
               - $facet:
@@ -58,9 +110,9 @@ scenarios:
                     - $limit: 50
                   pagination:
                     - $count: "count"
-            beforeRequest: "logRequest"        
+            # beforeRequest: "logRequest"        
             # afterResponse: "logResponse"
-            # afterResponse: "logErrorResponse"
+            afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200
         # Filter group by weight
@@ -73,7 +125,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -109,7 +161,7 @@ scenarios:
             afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200
-        # Filter group by 
+        # Filter group by team name
         - post:
             url: "/api/zorglink/zorglink-support-question-view"
             headers:
@@ -119,7 +171,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -164,7 +216,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -214,7 +266,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -259,7 +311,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -304,7 +356,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -349,7 +401,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -380,7 +432,7 @@ scenarios:
                     $sum: 1
               - $sort:
                   creationDate: -1
-            afterResponse: "logResponse"
+            # afterResponse: "logResponse"
             # afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200
@@ -394,7 +446,7 @@ scenarios:
               - $match:
                   learningSupportCenterId: 
                     $in:
-                      - "4126aba9-622d-4ada-98c3-2eb319793ec6"
+                      - "{{ learning_support_center_id }}"
               - $set:
                   schoolEntityName:
                     $ifNull:
@@ -425,7 +477,7 @@ scenarios:
                     $sum: 1
               - $sort:
                   creationDate: -1
-            afterResponse: "logResponse"
+            # afterResponse: "logResponse"
             # afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200                                          

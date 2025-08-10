@@ -10,11 +10,26 @@ config:
       phases:
         - duration: 1
           arrivalRate: 1
+      payload:
+        path: '../../data/tst-questions-mongo.csv'
+        fields:
+          - 'question_id'
+          - 'school_year' 
+          - 'creation_date'
+          - 'student_subscription_id'
+          - 'verslag_id'
+          - 'school_entity_id'
+          - 'learning_support_center_id'
+          - 'creator_id'
+          - 'name' 
+          - 'assignee_id'
+        skipHeader: true
+        delimiter: ','    
     acc:
       target: 'https://lemonade.leersteun.lars-acc.school'
       phases:
-        - duration: 1
-          arrivalRate: 1
+        - duration: 5
+          arrivalRate: 20
       payload:
         path: '../../data/acc-questions-mongo.csv'
         fields:
@@ -30,22 +45,6 @@ config:
           - 'assignee_id'
         skipHeader: true
         delimiter: ','    
-  # Load CSV data
-  payload:
-    path: '../../data/tst-questions-mongo.csv'
-    fields:
-      - 'question_id'
-      - 'school_year' 
-      - 'creation_date'
-      - 'student_subscription_id'
-      - 'verslag_id'
-      - 'school_entity_id'
-      - 'learning_support_center_id'
-      - 'creator_id'
-      - 'name' 
-      - 'assignee_id'
-    skipHeader: true
-    delimiter: ','
   variables:
     access_token: "{{ $env.ACCESS_TOKEN }}"
     mongo_claims: "{{ $env.MONGO_CLAIMS }}"

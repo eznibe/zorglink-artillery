@@ -4,7 +4,7 @@ config:
   phases:
     - duration: 1
       arrivalRate: 1
-      name: "Teams load"
+      name: "Care reception load"
   environments:
     tst:
       target: 'https://lemonade.leersteun.lars-tst.school'
@@ -39,8 +39,12 @@ config:
     prd:
       target: 'https://leersteun.lars.school'
       phases:
-        - duration: 1
+        - duration: '1s'
           arrivalRate: 4
+          maxVusers: 5000
+        # - duration: '5m'
+        #   arrivalRate: 10
+        #   rampTo: 50  
       payload:
         path: '../../data/prd-learning-support-centers.csv'
         fields:
@@ -50,24 +54,3 @@ config:
           - 'mongo_claims'
         skipHeader: true
         delimiter: ','
-
-scenarios:
-  - name: "Teams list Query"
-    weight: 100
-    flow:
-      - log: 'Current environment is set to: {{ $environment }} and LSC is: {{ name }} {{ learning_support_center_id }}'
-      - loop:
-        - post:
-            url: "/api/zorglink/zorglink-team"
-            headers:
-              Content-Type: "application/json"
-              Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
-            json:
-              - $match:
-                  learningSupportCenterId: "{{ learning_support_center_id }}"
-              - $sort:
-                  name: 1
-            afterResponse: "logErrorResponse"
-            expect:
-              - statusCode: 200
-        count: 1

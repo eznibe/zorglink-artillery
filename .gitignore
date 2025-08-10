@@ -1,2 +1,5 @@
 /node_modules
 .vscode
+
+artillery/data/acc-learning-support-centers.csv
+artillery/data/prd-learning-support-centers.csv

@@ -5,6 +5,10 @@ name: Run Artillery tests in parallel using a matrix
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -20,9 +24,8 @@ jobs:
         # Create a scenario_name variable in this job that will be used to
         # run an Artillery test for that scenario
         scenario_name:
-          - armadillo
-          - dino
-          - pony
+          - support-questions/queries/care_reception
+          - teams/queries/teams
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
@@ -34,4 +37,4 @@ jobs:
 
       - name: Run Artillery tests in parallel
         run: |
-          artillery run scenarios/${{matrix.scenario_name}}.yml --config config.yml
+          artillery run artillery/${{matrix.scenario_name}}.yml --config artillery/config/config_lists.yml
