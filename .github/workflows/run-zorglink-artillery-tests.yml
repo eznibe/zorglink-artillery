@@ -35,6 +35,9 @@ jobs:
       - name: Install Artillery
         run: npm install -g artillery
 
+      - name: Install Uuid
+        run: npm install -g uuid
+
       - name: Run Artillery tests in parallel
         run: |
           artillery run -e prd artillery/${{matrix.scenario_name}}.yml --config artillery/config/config_lists.yml
