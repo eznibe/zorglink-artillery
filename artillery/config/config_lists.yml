@@ -1,6 +1,6 @@
 config:
   target: 'https://lemonade.leersteun.lars-tst.school'
-  processor: "../../utils/response-logger.js"
+  processor: "../utils/response-logger.js"
   phases:
     - duration: 1
       arrivalRate: 1
