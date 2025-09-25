@@ -3,3 +3,8 @@
 
 artillery/data/acc-learning-support-centers.csv
 artillery/data/prd-learning-support-centers.csv
+
+# Sensitive CSV files created from GitHub Secrets
+artillery/data/secrets/
+
+GITHUB_ACTIONS_SECRETS.md

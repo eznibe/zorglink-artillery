@@ -1,20 +1,21 @@
 config:
   target: 'https://lemonade.leersteun.lars-acc.school'
-  # Add timeout configurations
+  # Conservative timeout settings
   http:
-    timeout: 30  # 30 seconds timeout
-    pool: 50     # Connection pool size
+    timeout: 60  # 60 seconds timeout
+    pool: 10     # Small connection pool
   phases:
-    - duration: 1
-      arrivalRate: 1
-      name: "Support question create commands"
-  lambda:
-    memorySize: 2048    
+    - duration: 10s
+      arrivalRate: 1  # Very low rate for debugging
+      name: "Debug Support Question Create"
   environments:
     tst:
       target: 'https://lemonade.leersteun.lars-tst.school'
+      http:
+        timeout: 60
+        pool: 10
       phases:
-        - duration: 1
+        - duration: 10s
           arrivalRate: 1
       payload:
         path: '../../data/tst-questions-mongo.csv'
@@ -31,21 +32,12 @@ config:
         delimiter: ','     
     acc:
       target: 'https://lemonade.leersteun.lars-acc.school'
-      # Add timeout configurations for acc environment
       http:
-        timeout: 30
-        pool: 100
+        timeout: 60
+        pool: 10
       phases:
-        # Reduced load to prevent timeouts
-        - duration: 1m
-          arrivalRate: 50
-        # - duration: 20s
-        #   arrivalRate: 20  
-        # - pause: 30s  
-        # - duration: 20s
-        #   arrivalRate: 10  
-        - duration: 1
-          arrivalRate: 1
+        - duration: 10s
+          arrivalRate: 1  # Very conservative for debugging
       payload:
         - path: '../../data/acc-questions-mongo-1k.csv'
           fields:
@@ -67,18 +59,17 @@ config:
             - 'mongo_claims'
           skipHeader: true
           delimiter: ','      
-  # variables:
-  #   access_token_: "{{ $env.ACCESS_TOKEN }}"
-  #   mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
+  variables:
+    access_token_: "{{ $env.ACCESS_TOKEN }}"
+    mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
   processor: '../../utils/response-logger.js'
-  # Add error logging
   engines:
     http:
-      # Enable detailed error logging
       extendedMetrics: true
+      maxSockets: 10  # Limit concurrent connections
 
 scenarios:
-  - name: "Create Support Question from CSV"
+  - name: "Debug Create Support Question"
     weight: 100
     flow:
       - post:
@@ -86,14 +77,14 @@ scenarios:
           headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
-          timeout: 30000  # 30 seconds in milliseconds
+          timeout: 60000  # 60 seconds
           json:
             _id: '{{ question_id }}'
             _corr: '{{ custom_uuid }}'
             _command: "put"
             _type: "zorglink-support-question"
-            questionText: 'LOAD_TEST'
-            schoolText: 'LOAD_TEST'
+            questionText: 'DEBUG_LOAD_TEST'
+            schoolText: 'DEBUG_LOAD_TEST'
             schoolYear: '{{ school_year }}'
             creationDate: '{{ creation_date }}'
             studentSubscriptionId: '{{ student_subscription_id }}'
@@ -101,7 +92,6 @@ scenarios:
             schoolEntityId: '{{ school_entity_id }}'
             learningSupportCenterId: '{{ learning_support_center_id }}'
             creatorId: '{{ creator_id }}'
-          # beforeRequest: 'logRequest'  
           beforeRequest: 'generateUuid' 
           afterResponse: 'logErrorResponse'
           expect:

@@ -2,18 +2,42 @@ config:
   target: 'https://lemonade.leersteun.lars-tst.school'
   phases:
     - duration: 1
-      arrivalRate: 10
-      name: "Trajectory delete commands"
-  # Load CSV data
-  payload:
-    path: '../../data/tst-questions-mongo.csv'
-    fields:
-      - 'question_id'
-    skipHeader: true
-    delimiter: ','
+      arrivalRate: 1  
+      name: "Trajectory create commands"
+  environments:
+    tst:
+      target: 'https://lemonade.leersteun.lars-tst.school'
+      phases:
+        - duration: 1
+          arrivalRate: 1
+      payload:
+        path: '../../data/tst-questions-mongo.csv'
+        fields:
+          - 'question_id'
+        skipHeader: true
+        delimiter: ','    
+    acc:
+      target: 'https://lemonade.leersteun.lars-acc.school'
+      phases:
+        - duration: 1
+          arrivalRate: 30
+      payload:
+        - path: '../../data/acc-questions-mongo.csv'
+          fields:
+            - 'question_id'
+          skipHeader: true
+          delimiter: ','
+        - path: '../../data/acc-learning-support-centers.csv'
+          fields:
+            - 'learning_support_center_id'
+            - 'name'
+            - 'access_token' 
+            - 'mongo_claims'
+          skipHeader: true
+          delimiter: ','    
   variables:
-    access_token: "{{ $env.ACCESS_TOKEN }}"
-    mongo_claims: "{{ $env.MONGO_CLAIMS }}"
+    access_token_: "{{ $env.ACCESS_TOKEN }}"
+    mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
   processor: '../../utils/response-logger.js'
 
 scenarios:
@@ -31,7 +55,7 @@ scenarios:
             _command: "delete"
             _type: "zorglink-trajectory"
           beforeRequest: 'generateUuid' 
-          afterResponse: 'logResponse'
+          # afterResponse: 'logResponse'
           expect:
             - statusCode: 
                 - 200

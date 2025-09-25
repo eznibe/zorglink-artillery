@@ -1,5 +1,9 @@
 config:
   target: 'https://lemonade.leersteun.lars-tst.school'
+  # Add timeout configurations
+  http:
+    timeout: 30  # 30 seconds timeout
+    pool: 50     # Connection pool size
   phases:
     - duration: 1
       arrivalRate: 1  
@@ -27,39 +31,54 @@ config:
         delimiter: ','    
     acc:
       target: 'https://lemonade.leersteun.lars-acc.school'
+      # Add timeout configurations for acc environment
+      http:
+        timeout: 30
+        pool: 50
       phases:
-        - duration: 5
-          arrivalRate: 20
+        - duration: 2m
+          arrivalRate: 10
+        # - duration: 1
+        #   arrivalRate: 1  
       payload:
-        path: '../../data/acc-questions-mongo.csv'
-        fields:
-          - 'question_id'
-          - 'school_year' 
-          - 'creation_date'
-          - 'student_subscription_id'
-          - 'verslag_id'
-          - 'school_entity_id'
-          - 'learning_support_center_id'
-          - 'creator_id'
-          - 'name' 
-          - 'assignee_id'
-        skipHeader: true
-        delimiter: ','    
-  variables:
-    access_token: "{{ $env.ACCESS_TOKEN }}"
-    mongo_claims: "{{ $env.MONGO_CLAIMS }}"
+        - path: '../../data/acc-questions-mongo-1k.csv'
+          fields:
+            - 'question_id'
+            - 'school_year' 
+            - 'creation_date'
+            - 'student_subscription_id'
+            - 'verslag_id'
+            - 'school_entity_id'
+            - 'learning_support_center_id'
+            - 'creator_id'
+            - 'name' 
+            - 'assignee_id'
+          skipHeader: true
+          delimiter: ','    
+        - path: '../../data/acc-learning-support-centers.csv'
+          fields:
+            - 'learning_support_center_id'
+            - 'name'
+            - 'access_token' 
+            - 'mongo_claims'
+          skipHeader: true
+          delimiter: ','      
+  # variables:
+  #   access_token_: "{{ $env.ACCESS_TOKEN }}"
+  #   mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
   processor: '../../utils/response-logger.js'
 
 scenarios:
   - name: "Create Support Question from CSV"
     weight: 100
     flow:
-      - log: 'Current environment is set to: {{ $environment }}'
+      # - log: 'Current environment is set to: {{ $environment }}'
       - post:
           url: '/api/zorglink/zorglink-trajectory/{{ question_id }}'
           headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+          timeout: 30000  # 30 seconds in milliseconds
           json:
             _id: '{{ question_id }}'
             _corr: '{{ custom_uuid }}'
@@ -69,7 +88,7 @@ scenarios:
             name: '{{ name }} - {{ question_id }}'          
             supportQuestionId: '{{ question_id }}'
           beforeRequest: 'generateUuid'  
-          afterResponse: 'logResponse'
+          afterResponse: 'logErrorResponse'
           expect:
             - statusCode: 
                 - 200

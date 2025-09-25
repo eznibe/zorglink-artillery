@@ -4,7 +4,7 @@ config:
   phases:
     - duration: 1
       arrivalRate: 1
-      name: "Teams load"
+      name: "Care reception load"
   environments:
     tst:
       target: 'https://lemonade.leersteun.lars-tst.school'
@@ -26,7 +26,7 @@ config:
       target: 'https://lemonade.leersteun.lars-acc.school'
       phases:
         - duration: 1
-          arrivalRate: 1
+          arrivalRate: 50
       payload:
         path: '../../data/acc-learning-support-centers.csv'
         fields:
@@ -42,6 +42,12 @@ config:
         timeout: 30
         pool: 100
       phases:
+        # - duration: 1m
+        #   arrivalRate: 10
+        #   maxVusers: 5000
+        # - duration: '3m'
+        #   arrivalRate: 100
+        #   maxVusers: 5000
         - duration: 5m
           arrivalRate: 10
           rampTo: 100
@@ -55,25 +61,65 @@ config:
           - 'mongo_claims'
         skipHeader: true
         delimiter: ','
+  # plugins:
+  #   apdex:
+  #     threshold: 1500
+  # variables:
+  #   access_token_: "{{ $env.ACCESS_TOKEN }}"
+  #   mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
 
 scenarios:
-  - name: "Teams list Query"
+  - name: "Support Question View Query"
     weight: 100
     flow:
       # - log: 'Current environment is set to: {{ $environment }} and LSC is: {{ name }} {{ learning_support_center_id }}'
-      - loop:
+      - parallel:
+        # Support Questions list
         - post:
-            url: "/api/zorglink/zorglink-team"
+            url: "/api/zorglink/zorglink-support-question-view"
             headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
-            timeout: 30000 
+            timeout: 30000    
             json:
               - $match:
-                  learningSupportCenterId: "{{ learning_support_center_id }}"
+                  learningSupportCenterId: 
+                    $in:
+                      - "{{ learning_support_center_id }}"
+              - $set:
+                  schoolEntityName:
+                    $ifNull:
+                      - "$schoolEntity.name"
+                      - ""
+              - $set: 
+                  supportQuestionStatus: "$supportQuestion.status"
+                  schoolEntityName:
+                    $cond:
+                      if:
+                        $ne:
+                          - "$schoolEntityName"
+                          - ""
+                      then:
+                        $concat:
+                          - " - "
+                          - "$schoolEntityName"
+                      else: ""
+              - $match:
+                  supportQuestionStatus:
+                    $in:
+                      - "OPEN"
+                      - "INCOMPLETE"
+                      - "ARCHIVED"
               - $sort:
-                  name: 1
+                  creationDate: -1
+              - $facet:
+                  data:
+                    - $skip: 0
+                    - $limit: 50
+                  pagination:
+                    - $count: "count"
+            # beforeRequest: "logRequest"        
+            # afterResponse: "logResponse"
             afterResponse: "logErrorResponse"
             expect:
               - statusCode: 200
-        count: 1

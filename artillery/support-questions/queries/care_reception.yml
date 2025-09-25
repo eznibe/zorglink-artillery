@@ -26,7 +26,7 @@ config:
       target: 'https://lemonade.leersteun.lars-acc.school'
       phases:
         - duration: 1
-          arrivalRate: 1
+          arrivalRate: 50
       payload:
         path: '../../data/acc-learning-support-centers.csv'
         fields:
@@ -38,10 +38,16 @@ config:
         delimiter: ','
     prd:
       target: 'https://leersteun.lars.school'
+      # http:
+      #   timeout: 30
+      #   pool: 100
       phases:
-        - duration: '10m'
-          arrivalRate: 30
+        - duration: 30s
+          arrivalRate: 5
           maxVusers: 5000
+        # - duration: '3m'
+        #   arrivalRate: 100
+        #   maxVusers: 5000
         # - duration: '5m'
         #   arrivalRate: 10
         #   rampTo: 50  
@@ -57,9 +63,9 @@ config:
   # plugins:
   #   apdex:
   #     threshold: 1500
-  variables:
-    access_token_: "{{ $env.ACCESS_TOKEN }}"
-    mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
+  # variables:
+  #   access_token_: "{{ $env.ACCESS_TOKEN }}"
+  #   mongo_claims_: "{{ $env.MONGO_CLAIMS }}"
 
 scenarios:
   - name: "Support Question View Query"
@@ -73,6 +79,7 @@ scenarios:
             headers:
               Content-Type: "application/json"
               Cookie: "access_token={{ access_token }}; mongo_claims={{ mongo_claims }}"
+            timeout: 30000    
             json:
               - $match:
                   learningSupportCenterId: 
@@ -132,6 +139,7 @@ scenarios:
                       - "$schoolEntity.name"
                       - ""
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $cond:
                       if:
@@ -144,7 +152,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -178,6 +186,7 @@ scenarios:
                       - "$schoolEntity.name"
                       - ""
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $cond:
                       if:
@@ -190,7 +199,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -218,6 +227,7 @@ scenarios:
                     $in:
                       - "{{ learning_support_center_id }}"
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $ifNull:
                       - "$schoolEntity.name"
@@ -240,7 +250,7 @@ scenarios:
                       - "$schoolEntity.schoolEntity.displayName"
                       - "$schoolEntityName"        
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -273,6 +283,7 @@ scenarios:
                       - "$schoolEntity.name"
                       - ""
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $cond:
                       if:
@@ -285,7 +296,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -313,6 +324,7 @@ scenarios:
                     $in:
                       - "{{ learning_support_center_id }}"
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $ifNull:
                       - "$schoolEntity.name"
@@ -330,7 +342,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -358,6 +370,7 @@ scenarios:
                     $in:
                       - "{{ learning_support_center_id }}"
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $ifNull:
                       - "$schoolEntity.name"
@@ -375,7 +388,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -403,6 +416,7 @@ scenarios:
                     $in:
                       - "{{ learning_support_center_id }}"
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $ifNull:
                       - "$schoolEntity.name"
@@ -420,7 +434,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
@@ -448,6 +462,7 @@ scenarios:
                     $in:
                       - "{{ learning_support_center_id }}"
               - $set:
+                  supportQuestionStatus: "$supportQuestion.status"
                   schoolEntityName:
                     $ifNull:
                       - "$schoolEntity.name"
@@ -465,7 +480,7 @@ scenarios:
                           - "$schoolEntityName"
                       else: ""
               - $match:
-                  status:
+                  supportQuestionStatus:
                     $in:
                       - "OPEN"
                       - "INCOMPLETE"
